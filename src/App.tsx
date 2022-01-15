@@ -1,18 +1,25 @@
 import { InformationCircleIcon } from "@heroicons/react/outline";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Alert } from "./components/alerts/Alert";
 import { Grid } from "./components/grid/Grid";
 import { Keyboard } from "./components/keyboard/Keyboard";
 import { AboutModal } from "./components/modals/AboutModal";
 import { InfoModal } from "./components/modals/InfoModal";
 import { WinModal } from "./components/modals/WinModal";
-import { isWordInWordList, isWinningWord, solution } from "./lib/words";
+import { isWordInWordList, isWinningWord, createSolution } from "./lib/words";
 import {
   loadGameStateFromLocalStorage,
   saveGameStateToLocalStorage,
 } from "./lib/localStorage";
 
 function App() {
+  const [{ solution, solutionIndex }, setSolution] = useState(createSolution());
+
+  const resetGame = useCallback(() => {
+    setSolution(createSolution());
+    setGuesses([]);
+  }, []);
+
   const [guesses, setGuesses] = useState<string[]>(
     loadGameStateFromLocalStorage()?.guesses || []
   );
@@ -53,7 +60,7 @@ function App() {
       }, 2000);
     }
 
-    const winningWord = isWinningWord(currentGuess);
+    const winningWord = isWinningWord(solution, currentGuess);
 
     if (currentGuess.length === 5 && guesses.length < 6 && !isGameWon) {
       setGuesses([...guesses, currentGuess]);
@@ -85,20 +92,28 @@ function App() {
         variant="success"
       />
       <div className="flex w-80 mx-auto items-center mb-8">
-        <h1 className="text-xl grow font-bold">Not Wordle</h1>
+        <h1 className="text-xl grow font-bold">Wordlee</h1>
         <InformationCircleIcon
           className="h-6 w-6 cursor-pointer"
           onClick={() => setIsInfoModalOpen(true)}
         />
       </div>
-      <Grid guesses={guesses} currentGuess={currentGuess} />
+      <Grid solution={solution} guesses={guesses} currentGuess={currentGuess} />
       <Keyboard
+        solution={solution}
         onChar={onChar}
         onDelete={onDelete}
         onEnter={onEnter}
         guesses={guesses}
       />
+      <button
+        className="flex items-center mx-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-10 rounded"
+        onClick={resetGame}>
+          New Game
+      </button>
       <WinModal
+        solution={solution}
+        solutionIndex={solutionIndex}
         isOpen={isWinModalOpen}
         handleClose={() => setIsWinModalOpen(false)}
         guesses={guesses}

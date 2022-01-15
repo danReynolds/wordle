@@ -8,10 +8,11 @@ type Props = {
   onDelete: () => void;
   onEnter: () => void;
   guesses: string[];
+  solution: string;
 };
 
-export const Keyboard = ({ onChar, onDelete, onEnter, guesses }: Props) => {
-  const charStatuses = getStatuses(guesses);
+export const Keyboard = ({ solution, onChar, onDelete, onEnter, guesses }: Props) => {
+  const charStatuses = getStatuses(solution, guesses);
 
   const onClick = (value: KeyValue) => {
     if (value === "ENTER") {
